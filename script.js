@@ -1,134 +1,273 @@
-const MODES = {
-  pomodoro: 25 * 60,
-  short: 5 * 60,
-  long: 15 * 60
-};
+/* ================================
+   CSS Variables (Theme)
+   ================================ */
+:root {
+  --color-bg: #0f1115;
+  --color-surface: #161a21;
+  --color-primary: #5b8cff;
+  --color-secondary: #2a2f3a;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #9aa4b2;
+  --color-accent: #4cd964;
 
-let currentMode = "pomodoro";
-let duration = MODES[currentMode];
-let remaining = duration;
-let startTimestamp = null;
-let timerId = null;
-let running = false;
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
-const timeEl = document.getElementById("time");
-const progressCircle = document.querySelector(".progress");
-const modeLabel = document.getElementById("mode-label");
-const todayCountEl = document.getElementById("today-count");
-const alarm = document.getElementById("alarm");
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
 
-const startBtn = document.getElementById("start");
-const pauseBtn = document.getElementById("pause");
-const resetBtn = document.getElementById("reset");
-const modeButtons = document.querySelectorAll(".mode");
-
-const RADIUS = 120;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-progressCircle.style.strokeDasharray = CIRCUMFERENCE;
-
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
 }
 
-function updateDisplay() {
-  timeEl.textContent = formatTime(remaining);
-  const progress = 1 - remaining / duration;
-  progressCircle.style.strokeDashoffset =
-    CIRCUMFERENCE * (1 - progress);
+/* ================================
+   Global Reset & Base Styles
+   ================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-function tick(timestamp) {
-  if (!startTimestamp) startTimestamp = timestamp;
-  const elapsed = Math.floor((timestamp - startTimestamp) / 1000);
-  const newRemaining = Math.max(duration - elapsed, 0);
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
 
-  if (newRemaining !== remaining) {
-    remaining = newRemaining;
-    updateDisplay();
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================================
+   App Layout
+   ================================ */
+.app {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ================================
+   Header
+   ================================ */
+.app-header {
+  text-align: center;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.app-subtitle {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+/* ================================
+   Timer Section
+   ================================ */
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.progress-container {
+  position: relative;
+  width: 260px;
+  height: 260px;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring__background {
+  fill: transparent;
+  stroke: var(--color-secondary);
+  stroke-width: 12;
+}
+
+.progress-ring__circle {
+  fill: transparent;
+  stroke: var(--color-primary);
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--transition-normal);
+}
+
+.time-display {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.time-separator {
+  margin: 0 2px;
+}
+
+/* ================================
+   Controls
+   ================================ */
+.controls {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #4a7df0;
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: var(--color-text-primary);
+}
+
+.btn-secondary:hover {
+  background-color: #343a46;
+}
+
+/* ================================
+   Mode Selector
+   ================================ */
+.mode-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  border: 1px solid var(--color-secondary);
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.mode-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.mode-btn.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+/* ================================
+   Settings
+   ================================ */
+.settings {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.setting-item input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* ================================
+   Stats
+   ================================ */
+.stats {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.stats strong {
+  color: var(--color-text-primary);
+}
+
+/* ================================
+   Footer
+   ================================ */
+.app-footer {
+  text-align: center;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+kbd {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: var(--color-secondary);
+  font-size: 0.75rem;
+}
+
+/* ================================
+   Responsive
+   ================================ */
+@media (max-width: 480px) {
+  .progress-container {
+    width: 220px;
+    height: 220px;
   }
 
-  if (remaining === 0) {
-    stopTimer();
-    handleSessionEnd();
-    return;
-  }
-
-  if (running) {
-    timerId = requestAnimationFrame(tick);
+  .time-display {
+    font-size: 2.5rem;
   }
 }
-
-function startTimer() {
-  if (running) return;
-  running = true;
-  startTimestamp = performance.now() - (duration - remaining) * 1000;
-  timerId = requestAnimationFrame(tick);
-}
-
-function stopTimer() {
-  running = false;
-  cancelAnimationFrame(timerId);
-}
-
-function resetTimer() {
-  stopTimer();
-  remaining = duration;
-  startTimestamp = null;
-  updateDisplay();
-}
-
-function switchMode(mode) {
-  currentMode = mode;
-  duration = MODES[mode];
-  remaining = duration;
-  startTimestamp = null;
-  updateDisplay();
-  modeLabel.textContent =
-    mode === "pomodoro" ? "Pomodoro" : mode === "short" ? "Short Break" : "Long Break";
-
-  modeButtons.forEach(btn =>
-    btn.classList.toggle("active", btn.dataset.mode === mode)
-  );
-}
-
-function handleSessionEnd() {
-  alarm.currentTime = 0;
-  alarm.play();
-
-  if (currentMode === "pomodoro") {
-    incrementTodayCount();
-    switchMode("short");
-  } else {
-    switchMode("pomodoro");
-  }
-}
-
-function incrementTodayCount() {
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const data = JSON.parse(localStorage.getItem("pomodoroData") || "{}");
-  data[todayKey] = (data[todayKey] || 0) + 1;
-  localStorage.setItem("pomodoroData", JSON.stringify(data));
-  updateTodayCount();
-}
-
-function updateTodayCount() {
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const data = JSON.parse(localStorage.getItem("pomodoroData") || "{}");
-  todayCountEl.textContent = data[todayKey] || 0;
-}
-
-startBtn.addEventListener("click", startTimer);
-pauseBtn.addEventListener("click", stopTimer);
-resetBtn.addEventListener("click", resetTimer);
-
-modeButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    stopTimer();
-    switchMode(btn.dataset.mode);
-  });
-});
-
-updateTodayCount();
-updateDisplay();
