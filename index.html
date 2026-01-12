@@ -2,59 +2,145 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pomodoro Focus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pomodoro Focus Timer</title>
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Script -->
+  <script defer src="script.js"></script>
 </head>
 <body>
-  <main class="app">
-    <header class="header">
-      <h1 class="title">Focus</h1>
-      <div class="mode-indicator">
-        <span id="mode-label">Pomodoro</span>
-      </div>
+  <main class="app" role="main">
+    <header class="app-header">
+      <h1 class="app-title">Focus</h1>
+      <p class="app-subtitle" aria-live="polite">
+        <span id="mode-label">Pomodoro</span> Session
+      </p>
     </header>
 
-    <section class="timer-section">
-      <div class="progress-ring">
-        <svg width="260" height="260">
-          <circle class="bg" cx="130" cy="130" r="120"></circle>
-          <circle class="progress" cx="130" cy="130" r="120"></circle>
+    <section class="timer-section" aria-label="Pomodoro Timer">
+      <div class="progress-container" aria-hidden="true">
+        <svg class="progress-ring" width="260" height="260">
+          <circle
+            class="progress-ring__background"
+            cx="130"
+            cy="130"
+            r="120"
+          />
+          <circle
+            class="progress-ring__circle"
+            cx="130"
+            cy="130"
+            r="120"
+          />
         </svg>
-        <div class="time-display">
-          <span id="time">25:00</span>
+        <div class="time-display" aria-live="assertive">
+          <span id="time-minutes">25</span
+          ><span class="time-separator">:</span
+          ><span id="time-seconds">00</span>
         </div>
       </div>
-    </section>
 
-    <section class="controls">
-      <button id="start" class="primary">Start</button>
-      <button id="pause">Pause</button>
-      <button id="reset">Reset</button>
-    </section>
-
-    <section class="modes">
-      <button data-mode="pomodoro" class="mode active">Pomodoro</button>
-      <button data-mode="short" class="mode">Short Break</button>
-      <button data-mode="long" class="mode">Long Break</button>
-    </section>
-
-    <footer class="footer">
-      <div class="stats">
-        <span>Today</span>
-        <strong id="today-count">0</strong>
-        <span>Pomodoros</span>
+      <div class="controls" role="group" aria-label="Timer controls">
+        <button
+          id="start-pause-btn"
+          class="btn btn-primary"
+          aria-label="Start or pause timer"
+        >
+          Start
+        </button>
+        <button
+          id="reset-btn"
+          class="btn btn-secondary"
+          aria-label="Reset timer"
+        >
+          Reset
+        </button>
       </div>
+    </section>
+
+    <section class="mode-selector" role="tablist" aria-label="Session modes">
+      <button
+        class="mode-btn active"
+        data-mode="pomodoro"
+        role="tab"
+        aria-selected="true"
+      >
+        Pomodoro
+      </button>
+      <button
+        class="mode-btn"
+        data-mode="shortBreak"
+        role="tab"
+        aria-selected="false"
+      >
+        Short Break
+      </button>
+      <button
+        class="mode-btn"
+        data-mode="longBreak"
+        role="tab"
+        aria-selected="false"
+      >
+        Long Break
+      </button>
+    </section>
+
+    <section class="settings" aria-label="Timer settings">
+      <div class="setting-item">
+        <label for="auto-switch-toggle">
+          Auto-switch sessions
+        </label>
+        <input
+          type="checkbox"
+          id="auto-switch-toggle"
+          aria-label="Toggle automatic session switching"
+        />
+      </div>
+
+      <div class="setting-item">
+        <label for="sound-toggle">
+          Sound alerts
+        </label>
+        <input
+          type="checkbox"
+          id="sound-toggle"
+          aria-label="Toggle sound alerts"
+        />
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Daily statistics">
+      <p>
+        Completed today:
+        <strong><span id="pomodoro-count">0</span></strong>
+      </p>
+    </section>
+
+    <footer class="app-footer">
+      <p class="hint" aria-hidden="true">
+        Press <kbd>Space</kbd> to start or pause
+      </p>
     </footer>
   </main>
 
-  <audio id="alarm" preload="auto">
-    <source src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" type="audio/ogg">
+  <!-- Accessible audio element for alerts -->
+  <audio
+    id="alarm-sound"
+    preload="auto"
+    aria-hidden="true"
+  >
+    <source src="alarm.mp3" type="audio/mpeg" />
   </audio>
-
-  <script src="script.js"></script>
 </body>
 </html>
